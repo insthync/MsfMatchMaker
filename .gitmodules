@@ -1,0 +1,3 @@
+[submodule "MsfUtilities"]
+	path = MsfUtilities
+	url = https://github.com/insthync/MsfUtilities.git
