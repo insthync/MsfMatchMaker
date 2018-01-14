@@ -2,6 +2,5 @@
 {
     matchMakingStart = 10001,
     matchMakingStop,
-    matchDetails,
-    matchComplete,
+    matchMakingLobbyCreated,
 }
