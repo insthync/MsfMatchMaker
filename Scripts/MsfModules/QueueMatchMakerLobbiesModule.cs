@@ -25,21 +25,6 @@ public class QueueMatchMakerLobbiesModule : LobbiesModule
         }
     }
 
-    protected override void HandleCreateLobby(IIncommingMessage message)
-    {
-        // Don't allow players to create lobby, QueueMatchMakerModule will handle it
-    }
-
-    protected override void HandleJoinLobby(IIncommingMessage message)
-    {
-        // Don't allow players to join lobby, QueueMatchMakerModule will handle it
-    }
-
-    protected override void HandleLeaveLobby(IIncommingMessage message)
-    {
-        // Don't allow players to leave lobby
-    }
-
     public bool CreateLobby(string gameModeName, List<QueueMatchMakerPlayer> players)
     {
         ILobbyFactory factory;
