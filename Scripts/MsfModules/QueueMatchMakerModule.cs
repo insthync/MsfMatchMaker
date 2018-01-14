@@ -122,7 +122,7 @@ public class QueueMatchMakerModule : ServerModuleBehaviour
 
                     if (usersInMatch.Count >= playersPerMatch)
                     {
-                        lobbiesModule.CreateLobby(gameModeName, usersInMatch);
+                        lobbiesModule.CreateGameLobby(gameModeName, usersInMatch);
                         return true;
                     }
                 }

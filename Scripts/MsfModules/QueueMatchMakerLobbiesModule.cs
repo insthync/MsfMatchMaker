@@ -18,22 +18,19 @@ public class QueueMatchMakerLobbiesModule : LobbiesModule
         foreach (var gameMode in gameModes)
         {
             if (!GameModes.ContainsKey(gameMode.name))
-            {
-                AddFactory(new QueueMatchMakerLobbyFactory(gameMode.name, this, gameMode.GenerateLobby));
                 GameModes.Add(gameMode.name, gameMode);
-            }
         }
     }
 
-    public bool CreateLobby(string gameModeName, List<QueueMatchMakerPlayer> players)
+    public bool CreateGameLobby(string gameModeName, List<QueueMatchMakerPlayer> players)
     {
-        ILobbyFactory factory;
-        Factories.TryGetValue(gameModeName, out factory);
+        BaseQueueMatchMakerGameMode gameMode;
+        GameModes.TryGetValue(gameModeName, out gameMode);
 
-        if (factory == null)
+        if (gameMode == null)
             return false;
 
-        var newLobby = factory.CreateLobby(null, null);
+        var newLobby = gameMode.GenerateLobby(this, players);
         if (AddLobby(newLobby))
         {
             var problemOccurs = false;
