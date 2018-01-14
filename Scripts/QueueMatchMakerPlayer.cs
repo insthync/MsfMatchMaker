@@ -5,16 +5,18 @@ using Barebones.Networking;
 
 public class QueueMatchMakerPlayer
 {
-    public string Username { get; set; }
-    public readonly IPeer Peer;
-    public float Time { get; set; }
+    public IPeer Peer { get; protected set; }
+    public string Username { get; protected set; }
+    public string GameModeName { get; protected set; }
+    public float Time { get; protected set; }
 
     protected Dictionary<string, string> Properties;
 
-    public QueueMatchMakerPlayer(string username, IPeer peer, float time, Dictionary<string, string> properties = null)
+    public QueueMatchMakerPlayer(IPeer peer, string username, string gameModeName, float time, Dictionary<string, string> properties = null)
     {
-        Username = username;
         Peer = peer;
+        Username = username;
+        GameModeName = gameModeName;
         Time = time;
         Properties = (properties == null) ? new Dictionary<string, string>() : properties;
     }

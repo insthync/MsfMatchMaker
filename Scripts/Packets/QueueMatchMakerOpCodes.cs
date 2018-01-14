@@ -1,6 +1,7 @@
 ﻿public enum QueueMatchMakerOpCodes : short
 {
-    matchMakingRequest = 10001,
+    matchMakingStart = 10001,
+    matchMakingStop,
     matchDetails,
     matchComplete,
 }

@@ -12,19 +12,14 @@ public class QueueMatchMakerModule : ServerModuleBehaviour
     private readonly BmLogger logger = Msf.Create.Logger(typeof(QueueMatchMakerModule).Name);
 
     public LogLevel logLevel = LogLevel.Info;
-    public int playersPerMatch = 1;
     public float pollFrequency = 2f;
-
-    public event Action<int> WaitingPlayersChanged;
+    
     public event Action<int> GamesUnderwayChanged;
     public event Action<int> GamesPlayedChanged;
     public event Action<int> GamesAbortedChanged;
 
-    protected Dictionary<string, QueueMatchMakerPlayer> playersWaiting;
-
-    private IServer server;
-
-    private Dictionary<int, QueueMatchMakerMatch> matches;
+    protected readonly Dictionary<string, Dictionary<string, QueueMatchMakerPlayer>> waitingPlayers = new Dictionary<string, Dictionary<string, QueueMatchMakerPlayer>>();
+    protected readonly Dictionary<int, QueueMatchMakerMatch> matches = new Dictionary<int, QueueMatchMakerMatch>();
 
     private SpawnersModule spawnersModule;
 
@@ -85,24 +80,20 @@ public class QueueMatchMakerModule : ServerModuleBehaviour
     public override void Initialize(IServer server)
     {
         base.Initialize(server);
-        this.server = server;
 
         logger.LogLevel = logLevel;
-
-        playersWaiting = new Dictionary<string, QueueMatchMakerPlayer>();
-
-        matches = new Dictionary<int, QueueMatchMakerMatch>();
-
+        
         GamesPlayed = 0;
         GamesAborted = 0;
         GamesUnderway = 0;
 
-        // Register functions that will be called when server receive messages with defined op-codes
-        this.server.SetHandler((short)QueueMatchMakerOpCodes.matchMakingRequest, OnPlayerRequestMatchMaking);
-        this.server.SetHandler((short)QueueMatchMakerOpCodes.matchDetails, OnReceiveMatchDetailsFromGameServer);
-        this.server.SetHandler((short)QueueMatchMakerOpCodes.matchComplete, OnGameServerComplete);
+        spawnersModule = server.GetModule<SpawnersModule>();
 
-        spawnersModule = this.server.GetModule<SpawnersModule>();
+        // Register functions that will be called when server receive messages with defined op-codes
+        server.SetHandler((short)QueueMatchMakerOpCodes.matchMakingStart, OnMatchMakingStart);
+        server.SetHandler((short)QueueMatchMakerOpCodes.matchMakingStop, OnMatchMakingStop);
+        server.SetHandler((short)QueueMatchMakerOpCodes.matchDetails, OnReceiveMatchDetailsFromGameServer);
+        server.SetHandler((short)QueueMatchMakerOpCodes.matchComplete, OnGameServerComplete);
 
         // Start coroutine to manage match maker
         StartCoroutine(MatchmakerCoroutine());
@@ -152,11 +143,11 @@ public class QueueMatchMakerModule : ServerModuleBehaviour
         }
     }
 
-    private void OnPlayerRequestMatchMaking(IIncommingMessage message)
+    private void OnMatchMakingStart(IIncommingMessage message)
     {
         int peerId = message.Peer.Id;
-        var peer = Server.GetPeer(peerId);
 
+        var peer = Server.GetPeer(peerId);
         if (peer == null)
         {
             message.Respond("Peer with a given ID is not in the game", ResponseStatus.Error);
@@ -164,17 +155,40 @@ public class QueueMatchMakerModule : ServerModuleBehaviour
         }
 
         var account = peer.GetExtension<IUserExtension>();
-
         if (account == null)
         {
             message.Respond("Peer has not been authenticated", ResponseStatus.Failed);
             return;
         }
 
-        QueueMatchMakerRequestPacket details = message.Deserialize(new QueueMatchMakerRequestPacket());
-        AddMatchmakerPlayer(new QueueMatchMakerPlayer(account.Username, message.Peer, Time.time, details.properties));
+        QueueMatchMakerStartPacket request = message.Deserialize(new QueueMatchMakerStartPacket());
+        AddMatchmakerPlayer(new QueueMatchMakerPlayer(message.Peer, account.Username, request.gameModeName, Time.time, request.properties));
 
-        // Response to clients that match made
+        // Response to clients that match making started
+        message.Respond(ResponseStatus.Success);
+    }
+
+    private void OnMatchMakingStop(IIncommingMessage message)
+    {
+        int peerId = message.Peer.Id;
+
+        var peer = Server.GetPeer(peerId);
+        if (peer == null)
+        {
+            message.Respond("Peer with a given ID is not in the game", ResponseStatus.Error);
+            return;
+        }
+
+        var account = peer.GetExtension<IUserExtension>();
+        if (account == null)
+        {
+            message.Respond("Peer has not been authenticated", ResponseStatus.Failed);
+            return;
+        }
+        
+        RemoveMatchmakerPlayer(account.Username);
+
+        // Response to clients that match making stopped
         message.Respond(ResponseStatus.Success);
     }
 
@@ -193,63 +207,68 @@ public class QueueMatchMakerModule : ServerModuleBehaviour
 
     private bool TryToStartAMatch()
     {
-        if (playersWaiting.Count < playersPerMatch)
+        var usersInMatch = new List<QueueMatchMakerPlayer>();
+        
+        lock (waitingPlayers)
         {
-            return false;
-        }
-
-        logger.Info("Matchmaker " + playersWaiting.Count);
-
-        List<QueueMatchMakerPlayer> usersInMatch = new List<QueueMatchMakerPlayer>();
-
-        int numberPlayers = 0;
-        lock (playersWaiting)
-        {
-            while (true)
+            var gameModeNames = new List<string>(waitingPlayers.Keys);
+            foreach (var gameModeName in gameModeNames)
             {
-                string user = playersWaiting.Keys.First();
-                QueueMatchMakerPlayer player = playersWaiting[user];
-                RemoveMatchmakerPlayer(user);
-                usersInMatch.Add(player);
-                numberPlayers++;
-                if (numberPlayers >= playersPerMatch)
-                    break;
+                var gameMode = QueueMatchMakerGameModes.Singleton.GameModes[gameModeName];
+                var playersPerMatch = gameMode.playersPerMatch;
+
+                var players = waitingPlayers[gameModeName];
+                if (players.Count < playersPerMatch)
+                    return false;
+
+                var usernames = new List<string>(players.Keys);
+                foreach (var username in usernames)
+                {
+                    var player = players[username];
+                    RemoveMatchmakerPlayer(username);
+                    usersInMatch.Add(player);
+
+                    if (usersInMatch.Count >= playersPerMatch)
+                        break;
+                }
             }
         }
-
         StartMatch(usersInMatch);
-
         return true;
     }
 
-    public void RemoveMatchmakerPlayer(string username)
+    public bool AddMatchmakerPlayer(QueueMatchMakerPlayer player)
     {
-        bool removed = false;
-        lock (playersWaiting)
+        lock (waitingPlayers)
         {
-            if (playersWaiting.ContainsKey(username))
+            var gameModeNames = new List<string>(QueueMatchMakerGameModes.Singleton.GameModes.Keys);
+            if (gameModeNames.Contains(player.GameModeName) && !waitingPlayers.ContainsKey(player.GameModeName))
+                waitingPlayers.Add(player.GameModeName, new Dictionary<string, QueueMatchMakerPlayer>());
+
+            if (waitingPlayers.ContainsKey(player.GameModeName) && !waitingPlayers[player.GameModeName].ContainsKey(player.Username))
             {
-                playersWaiting.Remove(username);
-                removed = true;
+                waitingPlayers[player.GameModeName].Add(player.Username, player);
+                return true;
             }
         }
-        if (removed && WaitingPlayersChanged != null)
-            WaitingPlayersChanged.Invoke(playersWaiting.Count);
+        return false;
     }
 
-    public void AddMatchmakerPlayer(QueueMatchMakerPlayer player)
+    public bool RemoveMatchmakerPlayer(string username)
     {
-        bool added = false;
-        lock (playersWaiting)
+        lock (waitingPlayers)
         {
-            if (!playersWaiting.ContainsKey(player.Username))
+            var gameModeNames = new List<string>(waitingPlayers.Keys);
+            foreach (var gameModeName in gameModeNames)
             {
-                playersWaiting.Add(player.Username, player);
-                added = true;
+                if (waitingPlayers[gameModeName].ContainsKey(username))
+                {
+                    waitingPlayers[gameModeName].Remove(username);
+                    return true;
+                }
             }
         }
-        if (added && WaitingPlayersChanged != null)
-            WaitingPlayersChanged.Invoke(playersWaiting.Count);
+        return false;
     }
 
     private bool StartMatch(List<QueueMatchMakerPlayer> usersInMatch)
