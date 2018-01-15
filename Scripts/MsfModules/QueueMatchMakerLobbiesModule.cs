@@ -28,41 +28,7 @@ public class QueueMatchMakerLobbiesModule : LobbiesModule
         if (!GameModes.TryGetValue(gameModeName, out gameMode))
             return false;
 
-        var newLobby = gameMode.GenerateLobby(this, players);
-        if (AddLobby(newLobby))
-        {
-            var problemOccurs = false;
-            var lobbyPackets = new Dictionary<IPeer, LobbyDataPacket>();
-            foreach (var player in players)
-            {
-                var user = GetOrCreateLobbiesExtension(player.Peer);
-                if (user.CurrentLobby != null)
-                {
-                    problemOccurs = true;
-                    break;
-                }
-
-                string error;
-                if (!newLobby.AddPlayer(user, out error))
-                {
-                    problemOccurs = true;
-                    break;
-                }
-
-                lobbyPackets.Add(player.Peer, newLobby.GenerateLobbyData(user));
-            }
-            
-            if (!problemOccurs)
-            {
-                // send lobby data to players
-                foreach (var lobbyPacket in lobbyPackets)
-                {
-                    lobbyPacket.Key.SendMessage((short)QueueMatchMakerOpCodes.matchMakingLobbyCreated, lobbyPacket.Value);
-                }
-                return true;
-            }
-        }
-
-        return false;
+        var newLobby = gameMode.CreateLobbyWithPlayers(this, players);
+        return newLobby != null && AddLobby(newLobby);
     }
 }
