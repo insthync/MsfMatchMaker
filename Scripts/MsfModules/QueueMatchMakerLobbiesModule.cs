@@ -25,9 +25,7 @@ public class QueueMatchMakerLobbiesModule : LobbiesModule
     public bool CreateGameLobby(string gameModeName, List<QueueMatchMakerPlayer> players)
     {
         BaseQueueMatchMakerGameMode gameMode;
-        GameModes.TryGetValue(gameModeName, out gameMode);
-
-        if (gameMode == null)
+        if (!GameModes.TryGetValue(gameModeName, out gameMode))
             return false;
 
         var newLobby = gameMode.GenerateLobby(this, players);

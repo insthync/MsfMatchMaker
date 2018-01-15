@@ -6,7 +6,6 @@ using Barebones.Networking;
 
 public abstract class BaseQueueMatchMakerGameMode : ScriptableObject
 {
-    public int playersPerMatch = 1;
-    public abstract Dictionary<string, string> GenerateSceneSpawnInfo(Dictionary<string, string> matchDetails);
+    public abstract int PlayersPerMatch { get; }
     public abstract ILobby GenerateLobby(LobbiesModule module, List<QueueMatchMakerPlayer> players);
 }

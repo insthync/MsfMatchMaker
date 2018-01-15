@@ -107,7 +107,7 @@ public class QueueMatchMakerModule : ServerModuleBehaviour
             foreach (var gameModeName in gameModeNames)
             {
                 var gameMode = lobbiesModule.GameModes[gameModeName];
-                var playersPerMatch = gameMode.playersPerMatch;
+                var playersPerMatch = gameMode.PlayersPerMatch;
 
                 var players = waitingPlayers[gameModeName];
                 if (players.Count < playersPerMatch)
