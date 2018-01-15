@@ -35,26 +35,17 @@ public abstract class BaseQueueMatchMakerGameMode : ScriptableObject
                 break;
             }
 
+            player.Peer.SendMessage((short)QueueMatchMakerOpCodes.matchMakingLobbyCreated, lobby.GenerateLobbyData(user));
+
             string error;
             if (!lobby.AddPlayer(user, out error))
             {
                 problemOccurs = true;
                 break;
             }
-
-            lobbyPackets.Add(player.Peer, lobby.GenerateLobbyData(user));
         }
 
-        if (!problemOccurs)
-        {
-            // send lobby data to players
-            foreach (var lobbyPacket in lobbyPackets)
-            {
-                lobbyPacket.Key.SendMessage((short)QueueMatchMakerOpCodes.matchMakingLobbyCreated, lobbyPacket.Value);
-            }
-            return true;
-        }
-        else
+        if (problemOccurs)
         {
             foreach (var player in players)
             {
@@ -63,6 +54,7 @@ public abstract class BaseQueueMatchMakerGameMode : ScriptableObject
             }
             return false;
         }
+        return true;
     }
 
     protected virtual LobbyUserExtension GetOrCreateLobbiesExtension(IPeer peer)
