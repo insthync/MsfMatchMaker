@@ -25,16 +25,6 @@ public class MobaCharacterSelectionGameMode : BaseQueueMatchMakerGameMode
         var config = new LobbyConfig();
         var lobby = new MobaCharacterSelectionLobby(module.GenerateLobbyId(), new[] { teamA, teamB }, module, config);
 
-        // Add controls for player's character (May add skills)
-        foreach (var player in players)
-        {
-            lobby.AddControl(new LobbyPropertyData()
-            {
-                Label = "",
-                Options = new List<string>(),
-                PropertyKey = "character_" + player.Username,
-            }, "");
-        }
         lobby.StartAutomation();
 
         return lobby;
