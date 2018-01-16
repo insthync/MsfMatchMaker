@@ -4,8 +4,11 @@ using UnityEngine;
 using Barebones.Networking;
 using Barebones.MasterServer;
 
+[CreateAssetMenu(fileName = "MobaCharacterSelectionGameMode", menuName = "GameMode/MobaCharacterSelectionGameMode")]
 public class MobaCharacterSelectionGameMode : BaseQueueMatchMakerGameMode
 {
+    public const string TEAM_A = "A";
+    public const string TEAM_B = "B";
     public int playersPerTeam = 2;
     public int waitToReadySeconds = 10;
     public int waitSeconds = 30;
@@ -13,12 +16,12 @@ public class MobaCharacterSelectionGameMode : BaseQueueMatchMakerGameMode
 
     protected override ILobby GenerateLobbyWithPlayers(LobbiesModule module, List<QueueMatchMakerPlayer> players)
     {
-        var teamA = new LobbyTeam("Team A")
+        var teamA = new LobbyTeam(TEAM_A)
         {
             MaxPlayers = playersPerTeam,
             MinPlayers = playersPerTeam
         };
-        var teamB = new LobbyTeam("Team B")
+        var teamB = new LobbyTeam(TEAM_B)
         {
             MaxPlayers = playersPerTeam,
             MinPlayers = playersPerTeam
