@@ -25,7 +25,6 @@ public abstract class BaseQueueMatchMakerGameMode : ScriptableObject
             return false;
 
         var problemOccurs = false;
-        var lobbyPackets = new Dictionary<IPeer, LobbyDataPacket>();
         foreach (var player in players)
         {
             var user = GetOrCreateLobbiesExtension(player.Peer);
