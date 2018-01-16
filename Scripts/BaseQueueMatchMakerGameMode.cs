@@ -32,35 +32,10 @@ public abstract class BaseQueueMatchMakerGameMode : ScriptableObject
     {
         if (lobby == null)
             return false;
-
-        var problemOccurs = false;
+        
         foreach (var player in players)
         {
-            var user = GetOrCreateLobbiesExtension(player.Peer);
-            if (user.CurrentLobby != null)
-            {
-                problemOccurs = true;
-                break;
-            }
-
-            player.Peer.SendMessage((short)QueueMatchMakerOpCodes.matchMakingLobbyCreated, lobby.GenerateLobbyData(user));
-
-            string error;
-            if (!lobby.AddPlayer(user, out error))
-            {
-                problemOccurs = true;
-                break;
-            }
-        }
-
-        if (problemOccurs)
-        {
-            foreach (var player in players)
-            {
-                var user = GetOrCreateLobbiesExtension(player.Peer);
-                lobby.RemovePlayer(user);
-            }
-            return false;
+            player.Peer.SendMessage((short)QueueMatchMakerOpCodes.matchMakingLobbyCreated, lobby.Id);
         }
         return true;
     }
