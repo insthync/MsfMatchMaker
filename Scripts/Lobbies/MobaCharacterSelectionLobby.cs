@@ -7,11 +7,14 @@ using Barebones.MasterServer;
 public class MobaCharacterSelectionLobby : BaseLobby
 {
     public const string PROPERTY_PREFIX_CHARACTER = "character_";
-    public float waitSeconds = 10;
+    public int waitToReadySeconds = 10;
+    public int waitSeconds = 30;
+    private bool isPlayersReady;
+    private int timeToWait;
 
     public MobaCharacterSelectionLobby(int lobbyId, IEnumerable<LobbyTeam> teams, LobbiesModule module, LobbyConfig config) : base(lobbyId, teams, module, config)
     {
-        config.EnableReadySystem = false;
+        config.EnableReadySystem = true;
         config.EnableManualStart = false;
         config.PlayAgainEnabled = false;
         config.EnableGameMasters = false;
@@ -42,6 +45,12 @@ public class MobaCharacterSelectionLobby : BaseLobby
         return base.SetProperty(setter, key, value);
     }
 
+    protected override void OnAllPlayersReady()
+    {
+        timeToWait = waitSeconds;
+        isPlayersReady = true;
+    }
+
     public void StartAutomation()
     {
         BTimer.Instance.StartCoroutine(StartTimer());
@@ -49,27 +58,38 @@ public class MobaCharacterSelectionLobby : BaseLobby
 
     protected IEnumerator StartTimer()
     {
-        float timeToWait = waitSeconds;
+        timeToWait = waitToReadySeconds;
+        isPlayersReady = false;
 
         var initialState = State;
-
         while (State == LobbyState.Preparations || State == initialState)
         {
-            yield return new WaitForSeconds(1f);
-
             if (IsDestroyed)
                 break;
+
+            yield return new WaitForSeconds(1f);
 
             // Reduce the time to wait by one second
             timeToWait -= 1;
 
-            StatusText = "Starting game in " + timeToWait;
-
-            if (timeToWait <= 0)
+            if (!isPlayersReady)
             {
-                StartGame();
-                Destroy();
-                break;
+                StatusText = "Waiting for players " + timeToWait;
+                if (timeToWait <= 0 && !isPlayersReady)
+                {
+                    Destroy();
+                    break;
+                }
+            }
+            else
+            {
+                StatusText = "Starting game in " + timeToWait;
+                if (timeToWait <= 0)
+                {
+                    StartGame();
+                    Destroy();
+                    break;
+                }
             }
         }
     }
