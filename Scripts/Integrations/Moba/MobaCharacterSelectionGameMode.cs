@@ -29,6 +29,7 @@ public class MobaCharacterSelectionGameMode : BaseQueueMatchMakerGameMode
 
         var config = new LobbyConfig();
         var lobby = new MobaCharacterSelectionLobby(module.GenerateLobbyId(), new[] { teamA, teamB }, module, config);
+        lobby.Name = "#" + lobby.Id;
         lobby.waitToReadySeconds = waitToReadySeconds;
         lobby.waitSeconds = waitSeconds;
         lobby.StartAutomation();
