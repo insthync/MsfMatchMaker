@@ -9,6 +9,15 @@ public abstract class BaseQueueMatchMakerGameMode : ScriptableObject
     public abstract int PlayersPerMatch { get; }
     protected abstract ILobby GenerateLobbyWithPlayers(LobbiesModule module, List<QueueMatchMakerPlayer> players);
 
+    /// <summary>
+    /// Initialize function, this will be called when lobbies module initialize, you may add server messages handlers here
+    /// </summary>
+    /// <param name="server"></param>
+    public virtual void Initialize(IServer server)
+    {
+
+    }
+
     public virtual ILobby CreateLobbyWithPlayers(LobbiesModule module, List<QueueMatchMakerPlayer> players)
     {
         var lobby = GenerateLobbyWithPlayers(module, players);

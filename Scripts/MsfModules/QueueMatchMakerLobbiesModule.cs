@@ -18,7 +18,10 @@ public class QueueMatchMakerLobbiesModule : LobbiesModule
         foreach (var gameMode in gameModes)
         {
             if (!GameModes.ContainsKey(gameMode.name))
+            {
+                gameMode.Initialize(server);
                 GameModes.Add(gameMode.name, gameMode);
+            }
         }
     }
 
