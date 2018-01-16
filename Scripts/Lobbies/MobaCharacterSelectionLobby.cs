@@ -75,7 +75,7 @@ public class MobaCharacterSelectionLobby : BaseLobby
             if (!isPlayersReady)
             {
                 StatusText = "Waiting for players " + timeToWait;
-                if (timeToWait <= 0 && !isPlayersReady)
+                if (timeToWait <= 0)
                 {
                     Destroy();
                     break;
