@@ -107,7 +107,8 @@ public class UIQueueMatchMaker : MonoBehaviour
                 countingTime = 0;
                 if (textCountMatchingTime != null)
                     textCountMatchingTime.text = "";
-                
+
+                yield return new WaitForEndOfFrame();
                 if (isMatchingDirty != isMatching)
                 {
                     ObjectActivation();
