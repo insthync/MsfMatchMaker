@@ -91,10 +91,11 @@ public class UIQueueMatchMaker : MonoBehaviour
         {
             if (isMatching)
             {
-                yield return new WaitForSeconds(1f);
                 ++countingTime;
                 if (textCountMatchingTime != null)
                     textCountMatchingTime.text = countingTime.ToString("N0");
+
+                yield return new WaitForSeconds(1f);
                 if (isMatchingDirty != isMatching)
                 {
                     ObjectActivation();
@@ -103,10 +104,10 @@ public class UIQueueMatchMaker : MonoBehaviour
             }
             else
             {
-                yield return new WaitForEndOfFrame();
                 countingTime = 0;
                 if (textCountMatchingTime != null)
                     textCountMatchingTime.text = "";
+                
                 if (isMatchingDirty != isMatching)
                 {
                     ObjectActivation();
