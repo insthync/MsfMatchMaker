@@ -23,7 +23,7 @@ public class QueueMatchMakerClient : MonoBehaviour
         Msf.Client.SetHandler((short)QueueMatchMakerOpCodes.matchMakingLobbyCreated, OnMatchMakingLobbyCreated);
         
         if (uiLobby == null)
-            uiLobby = FindObjectOfType<UIMobaLobby>();
+            uiLobby = FindObjectOfType<LobbyUi>();
     }
 
     protected virtual void Start()
