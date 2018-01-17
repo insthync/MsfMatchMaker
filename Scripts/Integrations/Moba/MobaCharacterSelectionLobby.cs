@@ -87,7 +87,6 @@ public class MobaCharacterSelectionLobby : BaseLobby
                 if (timeToWait <= 0)
                 {
                     StartGame();
-                    Destroy();
                     break;
                 }
             }
