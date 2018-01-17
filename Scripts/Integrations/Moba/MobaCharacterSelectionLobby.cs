@@ -63,6 +63,7 @@ public class MobaCharacterSelectionLobby : BaseLobby
     {
         if (!isPlayersReady)
         {
+            Broadcast(MessageHelper.Create((short)MobaMatchMakerOpCodes.AllPlayersReady));
             timeToWait = waitSeconds;
             isPlayersReady = true;
         }
