@@ -17,6 +17,7 @@ public class MobaCharacterSelectionLobby : BaseLobby
     {
         config.EnableReadySystem = true;
         config.EnableManualStart = false;
+        config.EnableTeamSwitching = false;
         config.PlayAgainEnabled = false;
         config.EnableGameMasters = false;
     }
