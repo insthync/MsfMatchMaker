@@ -32,6 +32,7 @@ public class MobaCharacterSelectionGameMode : BaseQueueMatchMakerGameMode
         lobby.Name = "#" + lobby.Id;
         lobby.waitToReadySeconds = waitToReadySeconds;
         lobby.waitSeconds = waitSeconds;
+        lobby.SetPlayablePlayers(players);
         lobby.StartAutomation();
 
         return lobby;
