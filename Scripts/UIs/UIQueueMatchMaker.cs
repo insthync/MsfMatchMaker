@@ -43,7 +43,7 @@ public class UIQueueMatchMaker : MonoBehaviour
         var connection = Msf.Client.Connection;
         var packet = new QueueMatchMakerStartPacket();
         packet.gameModeName = gameModeName;
-        connection.SendMessage((short)QueueMatchMakerOpCodes.matchMakingStart, packet, (status, response) =>
+        connection.SendMessage((short)QueueMatchMakerOpCodes.MatchMakingStart, packet, (status, response) =>
         {
             isMatching = true;
         });
@@ -52,7 +52,7 @@ public class UIQueueMatchMaker : MonoBehaviour
     public void OnClickStopMatchMaking()
     {
         var connection = Msf.Client.Connection;
-        connection.SendMessage((short)QueueMatchMakerOpCodes.matchMakingStop, (status, response) =>
+        connection.SendMessage((short)QueueMatchMakerOpCodes.MatchMakingStop, (status, response) =>
         {
             isMatching = false;
         });

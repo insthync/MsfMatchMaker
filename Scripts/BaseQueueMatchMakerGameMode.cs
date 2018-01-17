@@ -35,7 +35,7 @@ public abstract class BaseQueueMatchMakerGameMode : ScriptableObject
         
         foreach (var player in players)
         {
-            player.Peer.SendMessage((short)QueueMatchMakerOpCodes.matchMakingLobbyCreated, lobby.Id);
+            player.Peer.SendMessage((short)QueueMatchMakerOpCodes.MatchMakingLobbyCreated, lobby.Id);
         }
         return true;
     }

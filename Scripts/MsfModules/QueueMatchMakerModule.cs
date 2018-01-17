@@ -28,8 +28,8 @@ public class QueueMatchMakerModule : ServerModuleBehaviour
         lobbiesModule = server.GetModule<QueueMatchMakerLobbiesModule>();
 
         // Register functions that will be called when server receive messages with defined op-codes
-        server.SetHandler((short)QueueMatchMakerOpCodes.matchMakingStart, OnMatchMakingStart);
-        server.SetHandler((short)QueueMatchMakerOpCodes.matchMakingStop, OnMatchMakingStop);
+        server.SetHandler((short)QueueMatchMakerOpCodes.MatchMakingStart, OnMatchMakingStart);
+        server.SetHandler((short)QueueMatchMakerOpCodes.MatchMakingStop, OnMatchMakingStop);
 
         // Start coroutine to manage match maker
         StartCoroutine(MatchmakerCoroutine());

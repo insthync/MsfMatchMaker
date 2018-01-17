@@ -1,7 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Events;
 using Barebones.MasterServer;
 using Barebones.Networking;
 
@@ -20,7 +19,7 @@ public class QueueMatchMakerClient : MonoBehaviour
         if (Msf.Client.Auth.IsLoggedIn)
             OnLoggedIn();
         
-        Msf.Client.SetHandler((short)QueueMatchMakerOpCodes.matchMakingLobbyCreated, OnMatchMakingLobbyCreated);
+        Msf.Client.SetHandler((short)QueueMatchMakerOpCodes.MatchMakingLobbyCreated, OnMatchMakingLobbyCreated);
         
         if (uiLobby == null)
             uiLobby = FindObjectOfType<LobbyUi>();
@@ -67,6 +66,7 @@ public class QueueMatchMakerClient : MonoBehaviour
 
     protected virtual void OnMatchMakingLobbyCreated(IIncommingMessage message)
     {
+        // When match making lobby created, join the lobby
         var lobbyId = message.AsInt();
         var loadingPromise = Msf.Events.FireWithPromise(Msf.EventNames.ShowLoading, "Joining lobby");
         Msf.Client.Lobbies.JoinLobby(lobbyId, (lobby, error) =>
