@@ -41,7 +41,7 @@ public class MobaCharacterSelectionLobby : BaseLobby
         // Add controls for player's character (May add skills)
         AddControl(new LobbyPropertyData()
         {
-            Label = "",
+            Label = member.Username + "'s Character",
             Options = new List<string>(),
             PropertyKey = PROPERTY_PREFIX_CHARACTER + member.Username,
         }, "");
@@ -61,8 +61,11 @@ public class MobaCharacterSelectionLobby : BaseLobby
 
     protected override void OnAllPlayersReady()
     {
-        timeToWait = waitSeconds;
-        isPlayersReady = true;
+        if (!isPlayersReady)
+        {
+            timeToWait = waitSeconds;
+            isPlayersReady = true;
+        }
     }
 
     public void StartAutomation()
