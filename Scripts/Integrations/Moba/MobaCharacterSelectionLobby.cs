@@ -80,7 +80,7 @@ public class MobaCharacterSelectionLobby : BaseLobby
             timeToWait = waitSeconds;
             isPlayersReady = true;
             Config.EnableReadySystem = false;
-            SetProperty(PROPERTY_MOBA_LOBBY_STATE_KEY, MobaLobbyState.CharacterSelection.ToString());
+            SetProperty(PROPERTY_MOBA_LOBBY_STATE_KEY, ((short)MobaLobbyState.CharacterSelection).ToString());
         }
     }
 
