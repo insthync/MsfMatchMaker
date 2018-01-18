@@ -12,7 +12,7 @@ public class BaseUIMobaLobby : MonoBehaviour
     public Transform alliesContainer;
     public Transform enemiesContainer;
     
-    protected readonly Dictionary<string, LobbyUserUi> users = new Dictionary<string, LobbyUserUi>();
+    protected readonly Dictionary<string, UIMobaLobbyUser> Users = new Dictionary<string, UIMobaLobbyUser>();
     public string CurrentUser { get; protected set; }
     public string CurrentTeam { get; protected set; }
     public JoinedLobby JoinedLobby { get; protected set; }
@@ -29,15 +29,15 @@ public class BaseUIMobaLobby : MonoBehaviour
         for (var i = enemiesContainer.childCount - 1; i >= 0; --i)
             Destroy(enemiesContainer.GetChild(i).gameObject);
 
-        users.Clear();
+        Users.Clear();
 
         foreach (var player in lobby.Members)
-            users.Add(player.Key, CreateMemberView(player.Value));
+            Users.Add(player.Key, CreateMemberView(player.Value));
 
         UpdateReadyButton();
     }
 
-    protected virtual LobbyUserUi CreateMemberView(LobbyMemberData data)
+    protected virtual UIMobaLobbyUser CreateMemberView(LobbyMemberData data)
     {
         // Get user view
         var user = Instantiate(userPrefab);
@@ -70,24 +70,24 @@ public class BaseUIMobaLobby : MonoBehaviour
 
     public virtual void OnMemberJoined(LobbyMemberData member)
     {
-        users.Add(member.Username, CreateMemberView(member));
+        Users.Add(member.Username, CreateMemberView(member));
     }
 
     public virtual void OnMemberLeft(LobbyMemberData member)
     {
-        LobbyUserUi user;
-        if (!users.TryGetValue(member.Username, out user))
+        UIMobaLobbyUser user;
+        if (!Users.TryGetValue(member.Username, out user))
             return;
 
         Destroy(user.gameObject);
-        users.Remove(member.Username);
+        Users.Remove(member.Username);
     }
 
 
     public virtual void OnMemberReadyStatusChanged(LobbyMemberData member, bool isReady)
     {
-        LobbyUserUi user;
-        if (!users.TryGetValue(member.Username, out user))
+        UIMobaLobbyUser user;
+        if (!Users.TryGetValue(member.Username, out user))
             return;
 
         user.SetReady(isReady);
@@ -97,8 +97,8 @@ public class BaseUIMobaLobby : MonoBehaviour
 
     public virtual void OnMemberTeamChanged(LobbyMemberData member, LobbyTeamData team)
     {
-        LobbyUserUi user;
-        if (!users.TryGetValue(member.Username, out user))
+        UIMobaLobbyUser user;
+        if (!Users.TryGetValue(member.Username, out user))
             return;
 
         // Player changed teams
@@ -120,7 +120,7 @@ public class BaseUIMobaLobby : MonoBehaviour
 
     protected virtual void UpdateReadyButton()
     {
-        var user = users[CurrentUser];
+        var user = Users[CurrentUser];
 
         if (readyButton != null)
             readyButton.enabled = !JoinedLobby.Members[CurrentUser].IsReady;
