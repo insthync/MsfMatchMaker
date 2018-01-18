@@ -6,6 +6,7 @@ using Barebones.Networking;
 
 public class QueueMatchMakerClient : MonoBehaviour
 {
+    public static QueueMatchMakerClient Singleton { get; private set; }
     public List<GameObject> enableObjectsOnLogIn;
     public List<GameObject> disableObjectsOnLogout;
     public event System.Action<int> MatchMakingLobbyCreated;
@@ -13,6 +14,15 @@ public class QueueMatchMakerClient : MonoBehaviour
 
     protected virtual void Awake()
     {
+        if (Singleton != null)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        Singleton = this;
+        DontDestroyOnLoad(gameObject);
+
         Msf.Client.Auth.LoggedIn += OnLoggedIn;
         Msf.Client.Auth.LoggedOut += OnLoggedOut;
 
