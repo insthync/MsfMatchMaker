@@ -9,7 +9,7 @@ public class QueueMatchMakerClient : MonoBehaviour
     public List<GameObject> enableObjectsOnLogIn;
     public List<GameObject> disableObjectsOnLogout;
     public event System.Action<int> MatchMakingLobbyCreated;
-    public LobbyUi uiLobby;
+    public event System.Action<JoinedLobby> MatchMakingLobbyJoined;
 
     protected virtual void Awake()
     {
@@ -20,30 +20,12 @@ public class QueueMatchMakerClient : MonoBehaviour
             OnLoggedIn();
         
         Msf.Client.SetHandler((short)QueueMatchMakerOpCodes.MatchMakingLobbyCreated, OnMatchMakingLobbyCreated);
-        
-        if (uiLobby == null)
-            uiLobby = FindObjectOfType<LobbyUi>();
-    }
-
-    protected virtual void Start()
-    {
-        DisplayLobbyWindowIfInLobby();
     }
 
     protected virtual void OnDestroy()
     {
         Msf.Client.Auth.LoggedIn -= OnLoggedIn;
         Msf.Client.Auth.LoggedOut -= OnLoggedOut;
-    }
-
-    protected virtual void DisplayLobbyWindowIfInLobby()
-    {
-        var lastLobby = Msf.Client.Lobbies.LastJoinedLobby;
-        if (lastLobby != null && !lastLobby.HasLeft)
-        {
-            lastLobby.SetListener(uiLobby);
-            uiLobby.gameObject.SetActive(true);
-        }
     }
 
     protected virtual void OnLoggedIn()
@@ -78,10 +60,16 @@ public class QueueMatchMakerClient : MonoBehaviour
                 Msf.Events.Fire(Msf.EventNames.ShowDialogBox, DialogBoxData.CreateError(error));
                 return;
             }
-            DisplayLobbyWindowIfInLobby();
+            OnMatchMakingLobbyJoined(lobby);
         });
 
         if (MatchMakingLobbyCreated != null)
             MatchMakingLobbyCreated.Invoke(lobbyId);
+    }
+
+    protected virtual void OnMatchMakingLobbyJoined(JoinedLobby lobby)
+    {
+        if (MatchMakingLobbyJoined != null)
+            MatchMakingLobbyJoined.Invoke(lobby);
     }
 }
