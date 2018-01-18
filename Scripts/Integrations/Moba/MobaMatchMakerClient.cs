@@ -5,122 +5,111 @@ using Barebones.Networking;
 
 public class MobaMatchMakerClient : QueueMatchMakerClient, ILobbyListener
 {
+    public UIMobaPlayersReadyLobby uiPlayersReadyLobby;
     public UIMobaCharacterSelectionLobby uiCharacterSelectionLobby;
 
     protected override void Awake()
     {
         base.Awake();
 
+        if (uiPlayersReadyLobby == null)
+            uiPlayersReadyLobby = FindObjectOfType<UIMobaPlayersReadyLobby>();
+
         if (uiCharacterSelectionLobby == null)
             uiCharacterSelectionLobby = FindObjectOfType<UIMobaCharacterSelectionLobby>();
     }
 
-    protected override void DisplayLobbyWindowIfInLobby()
+    protected override void OnMatchMakingLobbyJoined(JoinedLobby lobby)
     {
-        var lastLobby = Msf.Client.Lobbies.LastJoinedLobby;
-        if (lastLobby != null && !lastLobby.HasLeft)
+        if (lobby != null && !lobby.HasLeft)
         {
-            lastLobby.SetListener(this);
-            uiLobby.gameObject.SetActive(true);
+            lobby.SetListener(this);
+            uiPlayersReadyLobby.gameObject.SetActive(true);
+            uiCharacterSelectionLobby.gameObject.SetActive(false);
         }
-        uiCharacterSelectionLobby.gameObject.SetActive(false);
-    }
-
-    protected virtual void DisplayCharacterSelectionLobbyWindowIfInLobby()
-    {
-        var lastLobby = Msf.Client.Lobbies.LastJoinedLobby;
-        if (lastLobby != null && !lastLobby.HasLeft)
-        {
-            lastLobby.SetListener(this);
-            uiCharacterSelectionLobby.gameObject.SetActive(true);
-        }
-        uiLobby.gameObject.SetActive(false);
     }
 
     #region ILobbyListener integration
     public void Initialize(JoinedLobby lobby)
     {
-        uiLobby.Initialize(lobby);
+        uiPlayersReadyLobby.Initialize(lobby);
         uiCharacterSelectionLobby.Initialize(lobby);
     }
 
     public void OnMemberPropertyChanged(LobbyMemberData member, string property, string value)
     {
-        uiLobby.OnMemberPropertyChanged(member, property, value);
-        uiCharacterSelectionLobby.OnMemberPropertyChanged(member, property, value);
     }
 
     public void OnMemberJoined(LobbyMemberData member)
     {
-        uiLobby.OnMemberJoined(member);
+        uiPlayersReadyLobby.OnMemberJoined(member);
         uiCharacterSelectionLobby.OnMemberJoined(member);
     }
 
     public void OnMemberLeft(LobbyMemberData member)
     {
-        uiLobby.OnMemberLeft(member);
+        uiPlayersReadyLobby.OnMemberLeft(member);
         uiCharacterSelectionLobby.OnMemberLeft(member);
     }
 
     public void OnLobbyLeft()
     {
-        uiLobby.OnLobbyLeft();
+        uiPlayersReadyLobby.OnLobbyLeft();
         uiCharacterSelectionLobby.OnLobbyLeft();
     }
 
     public void OnChatMessageReceived(LobbyChatPacket packet)
     {
-        uiLobby.OnChatMessageReceived(packet);
         uiCharacterSelectionLobby.OnChatMessageReceived(packet);
     }
 
     public void OnLobbyPropertyChanged(string property, string value)
     {
-        uiLobby.OnLobbyPropertyChanged(property, value);
-        uiCharacterSelectionLobby.OnLobbyPropertyChanged(property, value);
         if (property.Equals(MobaCharacterSelectionLobby.PROPERTY_MOBA_LOBBY_STATE_KEY))
         {
             var state = (MobaCharacterSelectionLobby.MobaLobbyState)short.Parse(value);
             switch (state)
             {
                 case MobaCharacterSelectionLobby.MobaLobbyState.WaitingPlayersToReady:
-                    DisplayLobbyWindowIfInLobby();
+                    uiPlayersReadyLobby.gameObject.SetActive(true);
+                    uiCharacterSelectionLobby.gameObject.SetActive(false);
                     break;
                 case MobaCharacterSelectionLobby.MobaLobbyState.CharacterSelection:
-                    DisplayCharacterSelectionLobbyWindowIfInLobby();
+                    uiPlayersReadyLobby.gameObject.SetActive(false);
+                    uiCharacterSelectionLobby.gameObject.SetActive(true);
                     break;
             }
+        }
+        else if (property.StartsWith(MobaCharacterSelectionLobby.PROPERTY_CHARACTER_KEY_PREFIX))
+        {
+            uiCharacterSelectionLobby.OnCharacterChanged(property.Substring(MobaCharacterSelectionLobby.PROPERTY_CHARACTER_KEY_PREFIX.Length), value);
         }
     }
 
     public void OnMasterChanged(string masterUsername)
     {
-        uiLobby.OnMasterChanged(masterUsername);
-        uiCharacterSelectionLobby.OnMasterChanged(masterUsername);
     }
 
     public void OnMemberReadyStatusChanged(LobbyMemberData member, bool isReady)
     {
-        uiLobby.OnMemberReadyStatusChanged(member, isReady);
+        uiPlayersReadyLobby.OnMemberReadyStatusChanged(member, isReady);
         uiCharacterSelectionLobby.OnMemberReadyStatusChanged(member, isReady);
     }
 
     public void OnMemberTeamChanged(LobbyMemberData member, LobbyTeamData team)
     {
-        uiLobby.OnMemberTeamChanged(member, team);
+        uiPlayersReadyLobby.OnMemberTeamChanged(member, team);
         uiCharacterSelectionLobby.OnMemberTeamChanged(member, team);
     }
 
     public void OnLobbyStatusTextChanged(string statusText)
     {
-        uiLobby.OnLobbyStatusTextChanged(statusText);
+        uiPlayersReadyLobby.OnLobbyStatusTextChanged(statusText);
         uiCharacterSelectionLobby.OnLobbyStatusTextChanged(statusText);
     }
 
     public void OnLobbyStateChange(LobbyState state)
     {
-        uiLobby.OnLobbyStateChange(state);
-        uiCharacterSelectionLobby.OnLobbyStateChange(state);
     }
     #endregion
 }
