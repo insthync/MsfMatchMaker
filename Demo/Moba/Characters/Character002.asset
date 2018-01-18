@@ -11,6 +11,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4b3310fc580ba8a40b29d93c04b5ab27, type: 3}
   m_Name: Character002
   m_EditorClassIdentifier: 
-  title: Character001
+  title: Character002
   description: 
-  icon: {fileID: 21300000, guid: 05d5393faf1e34042b69279c284583b2, type: 3}
+  icon: {fileID: 21300000, guid: 487a38088319b77479353a8f8f53b23f, type: 3}
